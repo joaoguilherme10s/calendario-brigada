@@ -218,7 +218,7 @@
 
   <header>
     <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Agendamentos abertos exclusivamente de <strong>Abril a Julho de 2027</strong></p>
+    <p>Agendamentos abertos anualmente de <strong>Abril a Julho</strong></p>
   </header>
 
   <div class="container">
@@ -227,7 +227,7 @@
     </div>
 
     <div class="card form-panel">
-      <h2><i class="fa-regular fa-calendar-check"></i> Dados do Agendamento</h2>
+      <h2><i class="fa-regular fa-calendar-check"></i> Dados du Agendamento</h2>
       
       <form id="formAgendamento">
         <div class="form-group">
@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Navegação restrita estritamente aos meses de Abril a Julho.
+        <i class="fa-solid fa-circle-info"></i> Período operacional permitido: <strong>Abril a Julho</strong> de qualquer ano.
       </div>
     </div>
   </div>
@@ -292,33 +292,35 @@
           center: 'title',
           right: 'dayGridMonth'
         },
-        initialDate: '2027-04-01',
         buttonText: {
-          today: 'Abril 2027',
+          today: 'Hoje',
           month: 'Mês'
         },
         
-        // Trava absoluta que impede fisicamente a visualização e os botões de avançar para fora de Abril a Julho de 2027
-        validRange: {
-          start: '2027-04-01',
-          end: '2027-08-01'
-        },
-
         dateClick: function(info) {
           const clickedDate = new Date(info.dateStr + 'T00:00:00');
           const dayOfWeek = clickedDate.getDay();
+          const month = clickedDate.getMonth() + 1; // 1 = Janeiro, 4 = Abril, 7 = Julho, etc.
 
-          // Bloqueia fins de semana
+          // 1. Valida se o mês está entre Abril (4) e Julho (7)
+          if (month < 4 || month > 7) {
+            alert('Atenção: Os agendamentos são permitidos apenas nos meses de Abril, Maio, Junho e Julho de cada ano.');
+            return;
+          }
+
+          // 2. Bloqueia fins de semana
           if (dayOfWeek === 0 || dayOfWeek === 6) {
             alert('Atenção: Instruções práticas não são ministradas aos sábados e domingos.');
             return;
           }
 
+          // 3. Verifica bloqueios administrativos
           if (cacheBloqueios.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} está bloqueada administrativamente.`);
             return;
           }
 
+          // 4. Verifica se já está ocupado
           if (cacheOcupados.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} já está ocupada por outro setor.`);
             return;
@@ -425,7 +427,7 @@
         document.getElementById('formAgendamento').reset();
         document.getElementById('dataSelecionada').value = '';
         selectedDateStr = null;
-        btn.disabled = true;
+        btn.disabledy = true;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
 
         if (calendarInstance) {

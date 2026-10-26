@@ -218,7 +218,7 @@
 
   <header>
     <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Agendamentos abertos a partir de <strong>Abril de 2027</strong> (Período seco / pós-chuvas)</p>
+    <p>Agendamentos restritos ao período de <strong>Abril a Julho de 2027</strong></p>
   </header>
 
   <div class="container">
@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Instruções suspensas de Jan a Mar devido às chuvas. Válido apenas de abril em diante.
+        <i class="fa-solid fa-circle-info"></i> Permitido apenas nos meses de Abril, Maio, Junho e Julho de 2027.
       </div>
     </div>
   </div>
@@ -292,10 +292,12 @@
           center: 'title',
           right: 'dayGridMonth'
         },
-        // Inicia direto em Abril de 2027
+        // Abre direto em Abril de 2027
         initialDate: '2027-04-01',
+        // Restringe estritamente entre 1 de Abril e 31 de Julho de 2027
         validRange: {
-          start: '2027-04-01' // Bloqueia e impede qualquer navegação para meses anteriores a abril
+          start: '2027-04-01',
+          end: '2027-08-01'
         },
         buttonText: {
           today: 'Abril 2027',

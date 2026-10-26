@@ -266,17 +266,15 @@
   </footer>
 
   <script>
-    // Substitua pelas suas chaves reais do Supabase quando for ativar o banco
-    const SUPABASE_URL = 'https://SEU_PROJETO.supabase.co';
-    const SUPABASE_KEY = 'SUA_CHAVE_ANON_PUBLIC_AQUI';
+    // Configuração oficial conectada ao seu Supabase
+    const SUPABASE_URL = 'https://dhiegmdhpvorgckpilnb.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVmdG1kaHB2b3JnY2twaWxubiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzkzMDIxOTM3LCJleHAiOjIxMDg1OTc5Mzd9.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
     
     let supabaseClient = null;
     try {
-      if (SUPABASE_URL.includes('supabase.co') && !SUPABASE_URL.includes('SEU_PROJETO')) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
-      console.log("Supabase não configurado. Rodando em modo de teste local.");
+      console.log("Erro ao iniciar Supabase.");
     }
 
     let selectedDateStr = null;
@@ -301,18 +299,20 @@
           month: 'Mês'
         },
         
-        // Evento disparado ao clicar em qualquer dia do calendário
+        selectAllow: function(selectInfo) {
+          const day = selectInfo.start.getDay();
+          return day !== 0 && day !== 6; 
+        },
+
         dateClick: async function(info) {
           const clickedDate = new Date(info.dateStr + 'T00:00:00');
           const dayOfWeek = clickedDate.getDay();
 
-          // Trava Sábados (6) e Domingos (0)
           if (dayOfWeek === 0 || dayOfWeek === 6) {
             alert('Atenção: Instruções práticas não são ministradas aos sábados e domingos.');
             return;
           }
 
-          // Se o Supabase estiver configurado, checa se o dia está bloqueado
           if (supabaseClient) {
             const estaBloqueado = await verificarDiaBloqueado(info.dateStr);
             if (estaBloqueado) {
@@ -321,13 +321,9 @@
             }
           }
 
-          // Atribui a data selecionada e libera o botão
           selectedDateStr = info.dateStr;
           document.getElementById('dataSelecionada').value = formatarDataBr(info.dateStr);
           document.getElementById('btnSubmit').disabled = false;
-          
-          // Feedback visual rápido
-          console.log("Data selecionada:", info.dateStr);
         },
 
         events: async function(fetchInfo, successCallback) {
@@ -374,7 +370,6 @@
       return eventos;
     }
 
-    // Envio do formulário
     document.getElementById('formAgendamento').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -390,17 +385,6 @@
       const btn = document.getElementById('btnSubmit');
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Agendando...';
-
-      // Se o Supabase não estiver configurado, simula com sucesso
-      if (!supabaseClient) {
-        alert(`✅ [Modo Teste] Agendamento simulado com sucesso para ${formatarDataBr(selectedDateStr)}!\nOM/Setor: ${omSetor}\nResponsável: ${responsavel}`);
-        document.getElementById('formAgendamento').reset();
-        document.getElementById('dataSelecionada').value = '';
-        selectedDateStr = null;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
-        return;
-      }
 
       try {
         const { error } = await supabaseClient

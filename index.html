@@ -218,7 +218,7 @@
 
   <header>
     <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Selecione uma data no calendário a partir de 2027 para realizar seu agendamento</p>
+    <p>Agendamentos abertos a partir de <strong>Abril de 2027</strong> (Período seco / pós-chuvas)</p>
   </header>
 
   <div class="container">
@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Sábados, domingos e dias já ocupados ou bloqueados não aceitam agendamento.
+        <i class="fa-solid fa-circle-info"></i> Instruções suspensas de Jan a Mar devido às chuvas. Válido apenas de abril em diante.
       </div>
     </div>
   </div>
@@ -292,12 +292,13 @@
           center: 'title',
           right: 'dayGridMonth'
         },
-        initialDate: '2027-01-01',
+        // Inicia direto em Abril de 2027
+        initialDate: '2027-04-01',
         validRange: {
-          start: '2027-01-01'
+          start: '2027-04-01' // Bloqueia e impede qualquer navegação para meses anteriores a abril
         },
         buttonText: {
-          today: 'Início 2027',
+          today: 'Abril 2027',
           month: 'Mês'
         },
         
@@ -311,7 +312,6 @@
             return;
           }
 
-          // Verifica se já está em cache como bloqueado ou ocupado
           if (cacheBloqueios.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} está bloqueada administrativamente.`);
             return;
@@ -322,7 +322,6 @@
             return;
           }
 
-          // Libera a seleção
           selectedDateStr = info.dateStr;
           document.getElementById('dataSelecionada').value = formatarDataBr(info.dateStr);
           document.getElementById('btnSubmit').disabled = false;

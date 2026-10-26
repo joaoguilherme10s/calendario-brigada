@@ -218,7 +218,7 @@
 
   <header>
     <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Agendamentos abertos anualmente de <strong>Abril a Julho</strong></p>
+    <p>Agendamentos abertos anualmente de <strong>Abril a Julho</strong> (Para qualquer ano)</p>
   </header>
 
   <div class="container">
@@ -227,7 +227,7 @@
     </div>
 
     <div class="card form-panel">
-      <h2><i class="fa-regular fa-calendar-check"></i> Dados du Agendamento</h2>
+      <h2><i class="fa-regular fa-calendar-check"></i> Dados do Agendamento</h2>
       
       <form id="formAgendamento">
         <div class="form-group">
@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Período operacional permitido: <strong>Abril a Julho</strong> de qualquer ano.
+        <i class="fa-solid fa-circle-info"></i> Liberado livremente nos meses de <strong>Abril, Maio, Junho e Julho</strong> de qualquer ano.
       </div>
     </div>
   </div>
@@ -296,13 +296,14 @@
           today: 'Hoje',
           month: 'Mês'
         },
+        // Sem limite de anos em `validRange`, permitindo navegar por qualquer ano livremente.
         
         dateClick: function(info) {
           const clickedDate = new Date(info.dateStr + 'T00:00:00');
           const dayOfWeek = clickedDate.getDay();
-          const month = clickedDate.getMonth() + 1; // 1 = Janeiro, 4 = Abril, 7 = Julho, etc.
+          const month = clickedDate.getMonth() + 1; // 1 = Jan, 4 = Abr, 7 = Jul, etc.
 
-          // 1. Valida se o mês está entre Abril (4) e Julho (7)
+          // 1. Regra anual: Permite APENAS Abril (4), Maio (5), Junho (6) e Julho (7) de QUALQUER ano
           if (month < 4 || month > 7) {
             alert('Atenção: Os agendamentos são permitidos apenas nos meses de Abril, Maio, Junho e Julho de cada ano.');
             return;
@@ -427,7 +428,7 @@
         document.getElementById('formAgendamento').reset();
         document.getElementById('dataSelecionada').value = '';
         selectedDateStr = null;
-        btn.disabledy = true;
+        btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
 
         if (calendarInstance) {

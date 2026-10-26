@@ -218,7 +218,7 @@
 
   <header>
     <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Agendamentos abertos anualmente de <strong>Abril a Julho</strong></p>
+    <p>Agendamentos abertos exclusivamente de <strong>Abril a Julho de 2027</strong></p>
   </header>
 
   <div class="container">
@@ -236,7 +236,7 @@
         </div>
 
         <div class="form-group">
-          <label alt="OM / Setor" for="omSetor">OM / Setor</label>
+          <label for="omSetor">OM / Setor</label>
           <input type="text" id="omSetor" placeholder="Ex: BABR / Célula Contraincêndio" required>
         </div>
 
@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Apenas os meses de <strong>Abril a Julho</strong> aparecem disponíveis para navegação.
+        <i class="fa-solid fa-circle-info"></i> Navegação restrita estritamente aos meses de Abril a Julho.
       </div>
     </div>
   </div>
@@ -294,17 +294,14 @@
         },
         initialDate: '2027-04-01',
         buttonText: {
-          today: 'Hoje',
+          today: 'Abril 2027',
           month: 'Mês'
         },
         
-        // Trava de visualização dinâmica que bloqueia o usuário de navegar para fora de Abril-Julho em qualquer ano
-        validRange: function(currentDate) {
-          const year = currentDate.getFullYear();
-          return {
-            start: `${year}-04-01`,
-            end: `${year}-08-01`
-          };
+        // Trava absoluta que impede fisicamente a visualização e os botões de avançar para fora de Abril a Julho de 2027
+        validRange: {
+          start: '2027-04-01',
+          end: '2027-08-01'
         },
 
         dateClick: function(info) {
@@ -317,13 +314,11 @@
             return;
           }
 
-          // Verifica bloqueios administrativos
           if (cacheBloqueios.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} está bloqueada administrativamente.`);
             return;
           }
 
-          // Verifica se já está ocupado
           if (cacheOcupados.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} já está ocupada por outro setor.`);
             return;

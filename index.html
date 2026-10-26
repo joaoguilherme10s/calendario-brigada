@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento de Instrução Prática - Brigada</title>
+  
+  <!-- CSS DO FULLCALENDAR -->
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css' rel='stylesheet' />
+  <!-- JS DO FULLCALENDAR E TRADUÇÃO -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+  <!-- SUPABASE JS CLIENT -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- GOOGLE FONTS & FONT AWESOME -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-color: #0b132b;
+      --card-bg: #1c2541;
+      --accent-blue: #48cae4;
+      --accent-hover: #00b4d8;
+      --text-main: #ffffff;
+      --text-muted: #a0aec0;
+      --danger-color: #e63946;
+      --border-color: #2b3a67;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: var(--card-bg);
+      border-bottom: 2px solid var(--border-color);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 5px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    #calendar {
+      min-height: 600px;
+      width: 100%;
+    }
+
+    .fc {
+      color: var(--text-main);
+    }
+
+    .fc .fc-toolbar-title {
+      color: var(--accent-blue);
+      font-size: 1.2rem;
+    }
+
+    .fc .fc-button-primary {
+      background-color: #2b3a67;
+      border-color: var(--border-color);
+      color: var(--text-main);
+    }
+
+    .fc .fc-button-primary:hover {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: var(--bg-color);
+    }
+
+    .fc-daygrid-day-number {
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .fc-day-sat, .fc-day-sun {
+      background-color: rgba(0, 0, 0, 0.25) !important;
+      cursor: not-allowed;
+    }
+
+    .fc-col-header-cell-cushion {
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    .form-panel h2 {
+      font-size: 1.3rem;
+      color: var(--accent-blue);
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: #0b132b;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .btn-agendar {
+      width: 100%;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--accent-blue);
+      color: var(--bg-color);
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 0.5rem;
+    }
+
+    .btn-agendar:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-agendar:disabled {
+      background-color: var(--border-color);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .info-box {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 6px;
+      background-color: rgba(72, 202, 228, 0.1);
+      border-left: 4px solid var(--accent-blue);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
+    <p>Selecione uma data no calendário a partir de 2027 para realizar seu agendamento</p>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div id="calendar"></div>
+    </div>
+
+    <div class="card form-panel">
+      <h2><i class="fa-regular fa-calendar-check"></i> Dados do Agendamento</h2>
+      
+      <form id="formAgendamento">
+        <div class="form-group">
+          <label for="dataSelecionada">Data Selecionada</label>
+          <input type="text" id="dataSelecionada" placeholder="Clique em um dia no calendário" readonly required style="background-color: #111827; color: var(--accent-blue); font-weight: bold;">
+        </div>
+
+        <div class="form-group">
+          <label for="omSetor">OM / Setor</label>
+          <input type="text" id="omSetor" placeholder="Ex: BABR / Célula Contraincêndio" required>
+        </div>
+
+        <div class="form-group">
+          <label for="responsavel">Responsável</label>
+          <input type="text" id="responsavel" placeholder="Nome do responsável" required>
+        </div>
+
+        <div class="form-group">
+          <label for="telefone">Telefone para Contato</label>
+          <input type="tel" id="telefone" placeholder="Ex: (61) 99999-9999" required>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn-agendar" disabled>
+          <i class="fa-solid fa-check"></i> Confirmar Agendamento
+        </button>
+      </form>
+
+      <div class="info-box">
+        <i class="fa-solid fa-circle-info"></i> Sábados, domingos e dias bloqueados não aceitam agendamento.
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2027 Sistema de Treinamento de Brigadistas. Todos os direitos reservados.</p>
+  </footer>
+
+  <script>
+    // Substitua pelas suas chaves reais do Supabase quando for ativar o banco
+    const SUPABASE_URL = 'https://SEU_PROJETO.supabase.co';
+    const SUPABASE_KEY = 'SUA_CHAVE_ANON_PUBLIC_AQUI';
+    
+    let supabaseClient = null;
+    try {
+      if (SUPABASE_URL.includes('supabase.co') && !SUPABASE_URL.includes('SEU_PROJETO')) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {
+      console.log("Supabase não configurado. Rodando em modo de teste local.");
+    }
+
+    let selectedDateStr = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const calendarEl = document.getElementById('calendar');
+
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth'
+        },
+        initialDate: '2027-01-01',
+        validRange: {
+          start: '2027-01-01'
+        },
+        buttonText: {
+          today: 'Início 2027',
+          month: 'Mês'
+        },
+        
+        // Evento disparado ao clicar em qualquer dia do calendário
+        dateClick: async function(info) {
+          const clickedDate = new Date(info.dateStr + 'T00:00:00');
+          const dayOfWeek = clickedDate.getDay();
+
+          // Trava Sábados (6) e Domingos (0)
+          if (dayOfWeek === 0 || dayOfWeek === 6) {
+            alert('Atenção: Instruções práticas não são ministradas aos sábados e domingos.');
+            return;
+          }
+
+          // Se o Supabase estiver configurado, checa se o dia está bloqueado
+          if (supabaseClient) {
+            const estaBloqueado = await verificarDiaBloqueado(info.dateStr);
+            if (estaBloqueado) {
+              alert(`A data ${formatarDataBr(info.dateStr)} está bloqueada (${estaBloqueado.motivo || 'Indisponível'}).`);
+              return;
+            }
+          }
+
+          // Atribui a data selecionada e libera o botão
+          selectedDateStr = info.dateStr;
+          document.getElementById('dataSelecionada').value = formatarDataBr(info.dateStr);
+          document.getElementById('btnSubmit').disabled = false;
+          
+          // Feedback visual rápido
+          console.log("Data selecionada:", info.dateStr);
+        },
+
+        events: async function(fetchInfo, successCallback) {
+          let eventos = [];
+          if (supabaseClient) {
+            eventos = await carregarBloqueios();
+          }
+          successCallback(eventos);
+        }
+      });
+
+      calendar.render();
+    });
+
+    async function verificarDiaBloqueado(dataStr) {
+      try {
+        const { data } = await supabaseClient
+          .from('dias_bloqueados')
+          .select('*')
+          .eq('data', dataStr)
+          .maybeSingle();
+        return data; 
+      } catch (err) {
+        return null;
+      }
+    }
+
+    async function carregarBloqueios() {
+      const eventos = [];
+      try {
+        const { data: bloqueios } = await supabaseClient.from('dias_bloqueados').select('*');
+        if (bloqueios) {
+          bloqueios.forEach(b => {
+            eventos.push({
+              title: `🚫 ${b.motivo || 'Indisponível'}`,
+              start: b.data,
+              allDay: true,
+              color: '#e63946',
+              textColor: '#ffffff'
+            });
+          });
+        }
+      } catch (e) {}
+      return eventos;
+    }
+
+    // Envio do formulário
+    document.getElementById('formAgendamento').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const omSetor = document.getElementById('omSetor').value.trim();
+      const responsavel = document.getElementById('responsavel').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+
+      if (!selectedDateStr) {
+        alert("Por favor, selecione uma data no calendário.");
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Agendando...';
+
+      // Se o Supabase não estiver configurado, simula com sucesso
+      if (!supabaseClient) {
+        alert(`✅ [Modo Teste] Agendamento simulado com sucesso para ${formatarDataBr(selectedDateStr)}!\nOM/Setor: ${omSetor}\nResponsável: ${responsavel}`);
+        document.getElementById('formAgendamento').reset();
+        document.getElementById('dataSelecionada').value = '';
+        selectedDateStr = null;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('agendamentos')
+          .insert([
+            {
+              data_instrucao: selectedDateStr,
+              om_setor: omSetor,
+              responsavel: responsavel,
+              telefone: telefone,
+              criado_em: new Date().toISOString()
+            }
+          ]);
+
+        if (error) throw error;
+
+        alert(`✅ Agendamento realizado com sucesso para ${formatarDataBr(selectedDateStr)}!`);
+        document.getElementById('formAgendamento').reset();
+        document.getElementById('dataSelecionada').value = '';
+        selectedDateStr = null;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
+
+      } catch (error) {
+        alert("Erro ao realizar o agendamento: " + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Tentar Novamente';
+      }
+    });
+
+    function formatarDataBr(dataIso) {
+      const partes = dataIso.split('-');
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+  </script>
+</body>
+</html>

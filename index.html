@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Sábados, domingos e dias bloqueados não aceitam agendamento.
+        <i class="fa-solid fa-circle-info"></i> Sábados, domingos e dias já ocupados ou bloqueados não aceitam agendamento.
       </div>
     </div>
   </div>
@@ -266,9 +266,8 @@
   </footer>
 
   <script>
-    // Configuração oficial conectada ao seu Supabase
     const SUPABASE_URL = 'https://dhiegmdhpvorgckpilnb.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVmdG1kaHB2b3JnY2twaWxubiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzkzMDIxOTM3LCJleHAiOjIxMDg1OTc5Mzd9.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVmbG1kaHB2b3JnY2twaWxubiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzkzMDIxOTM3LCJleHAiOjIxMDg1OTc5MzdğunI.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
     
     let supabaseClient = null;
     try {
@@ -278,11 +277,12 @@
     }
 
     let selectedDateStr = null;
+    let calendarInstance = null;
 
     document.addEventListener('DOMContentLoaded', function() {
       const calendarEl = document.getElementById('calendar');
 
-      const calendar = new FullCalendar.Calendar(calendarEl, {
+      calendarInstance = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'pt-br',
         headerToolbar: {
@@ -314,9 +314,10 @@
           }
 
           if (supabaseClient) {
-            const estaBloqueado = await verificarDiaBloqueado(info.dateStr);
-            if (estaBloqueado) {
-              alert(`A data ${formatarDataBr(info.dateStr)} está bloqueada (${estaBloqueado.motivo || 'Indisponível'}).`);
+            // Verifica se já está bloqueado administrativamente ou já agendado
+            const indisponivel = await verificarIndisponibilidade(info.dateStr);
+            if (indisponivel) {
+              alert(`A data ${formatarDataBr(info.dateStr)} já está ocupada ou indisponível (${indisponivel.motivo}).`);
               return;
             }
           }
@@ -326,26 +327,41 @@
           document.getElementById('btnSubmit').disabled = false;
         },
 
+        // Carrega bloqueios e agendamentos existentes no calendário
         events: async function(fetchInfo, successCallback) {
           let eventos = [];
           if (supabaseClient) {
-            eventos = await carregarBloqueios();
+            const bloqueios = await carregarBloqueios();
+            const agendados = await carregarAgendamentos();
+            eventos = [...bloqueios, ...agendados];
           }
           successCallback(eventos);
         }
       });
 
-      calendar.render();
+      calendarInstance.render();
     });
 
-    async function verificarDiaBloqueado(dataStr) {
+    // Verifica se a data está na tabela de dias bloqueados ou na de agendamentos
+    async function verificarIndisponibilidade(dataStr) {
       try {
-        const { data } = await supabaseClient
+        // 1. Checa bloqueios administrativos
+        const { data: bloqueio } = await supabaseClient
           .from('dias_bloqueados')
-          .select('*')
+          .select('motivo')
           .eq('data', dataStr)
           .maybeSingle();
-        return data; 
+        if (bloqueio) return { motivo: bloqueio.motivo };
+
+        // 2. Checa se já foi agendado por outro setor
+        const { data: agendado } = await supabaseClient
+          .from('agendamentos')
+          .select('om_setor')
+          .eq('data_instrucao', dataStr)
+          .maybeSingle();
+        if (agendado) return { motivo: `Agendado por: ${agendado.om_setor}` };
+
+        return null;
       } catch (err) {
         return null;
       }
@@ -370,6 +386,25 @@
       return eventos;
     }
 
+    async function carregarAgendamentos() {
+      const eventos = [];
+      try {
+        const { data: agendamentos } = await supabaseClient.from('agendamentos').select('*');
+        if (agendamentos) {
+          agendamentos.forEach(a => {
+            eventos.push({
+              title: `🔒 Ocupado (${a.om_setor})`,
+              start: a.data_instrucao,
+              allDay: true,
+              color: '#1d3557',
+              textColor: '#48cae4'
+            });
+          });
+        }
+      } catch (e) {}
+      return eventos;
+    }
+
     document.getElementById('formAgendamento').addEventListener('submit', async function(e) {
       e.preventDefault();
 
@@ -387,6 +422,7 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Agendando...';
 
       try {
+        // Tenta inserir no banco. Se outra pessoa tiver marcado no mesmo segundo, o banco rejeita pela regra UNIQUE.
         const { error } = await supabaseClient
           .from('agendamentos')
           .insert([
@@ -399,7 +435,12 @@
             }
           ]);
 
-        if (error) throw error;
+        if (error) {
+          if (error.code === '23505') { // Código do Postgres para violação de duplicidade (Unique constraint)
+            throw new Error("Esta data acabou de ser agendada por outro setor há poucos instantes! Escolha outra data.");
+          }
+          throw error;
+        }
 
         alert(`✅ Agendamento realizado com sucesso para ${formatarDataBr(selectedDateStr)}!`);
         document.getElementById('formAgendamento').reset();
@@ -408,10 +449,20 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
 
+        // Atualiza o calendário na hora para mostrar o dia como ocupado
+        if (calendarInstance) {
+          calendarInstance.refetchEvents();
+        }
+
       } catch (error) {
         alert("Erro ao realizar o agendamento: " + error.message);
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Tentar Novamente';
+        
+        // Atualiza o calendário para refletir o estado real caso tenha tido concorrência
+        if (calendarInstance) {
+          calendarInstance.refetchEvents();
+        }
       }
     });
 

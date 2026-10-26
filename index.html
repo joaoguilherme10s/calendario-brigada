@@ -266,8 +266,9 @@
   </footer>
 
   <script>
+    // Configuração corrigida com a URL e Chave exatas do seu projeto
     const SUPABASE_URL = 'https://dhiegmdhpvorgckpilnb.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVmbG1kaHB2b3JnY2twaWxubiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzkzMDIxOTM3LCJleHAiOjIxMDg1OTc5MzdğunI.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjE5MzcsImV4cCI6MjEwODU5NzkzN30.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
     
     let supabaseClient = null;
     try {
@@ -314,7 +315,6 @@
           }
 
           if (supabaseClient) {
-            // Verifica se já está bloqueado administrativamente ou já agendado
             const indisponivel = await verificarIndisponibilidade(info.dateStr);
             if (indisponivel) {
               alert(`A data ${formatarDataBr(info.dateStr)} já está ocupada ou indisponível (${indisponivel.motivo}).`);
@@ -327,7 +327,6 @@
           document.getElementById('btnSubmit').disabled = false;
         },
 
-        // Carrega bloqueios e agendamentos existentes no calendário
         events: async function(fetchInfo, successCallback) {
           let eventos = [];
           if (supabaseClient) {
@@ -342,10 +341,8 @@
       calendarInstance.render();
     });
 
-    // Verifica se a data está na tabela de dias bloqueados ou na de agendamentos
     async function verificarIndisponibilidade(dataStr) {
       try {
-        // 1. Checa bloqueios administrativos
         const { data: bloqueio } = await supabaseClient
           .from('dias_bloqueados')
           .select('motivo')
@@ -353,7 +350,6 @@
           .maybeSingle();
         if (bloqueio) return { motivo: bloqueio.motivo };
 
-        // 2. Checa se já foi agendado por outro setor
         const { data: agendado } = await supabaseClient
           .from('agendamentos')
           .select('om_setor')
@@ -422,7 +418,6 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Agendando...';
 
       try {
-        // Tenta inserir no banco. Se outra pessoa tiver marcado no mesmo segundo, o banco rejeita pela regra UNIQUE.
         const { error } = await supabaseClient
           .from('agendamentos')
           .insert([
@@ -436,7 +431,7 @@
           ]);
 
         if (error) {
-          if (error.code === '23505') { // Código do Postgres para violação de duplicidade (Unique constraint)
+          if (error.code === '23505') {
             throw new Error("Esta data acabou de ser agendada por outro setor há poucos instantes! Escolha outra data.");
           }
           throw error;
@@ -449,7 +444,6 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
 
-        // Atualiza o calendário na hora para mostrar o dia como ocupado
         if (calendarInstance) {
           calendarInstance.refetchEvents();
         }
@@ -459,7 +453,6 @@
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Tentar Novamente';
         
-        // Atualiza o calendário para refletir o estado real caso tenha tido concorrência
         if (calendarInstance) {
           calendarInstance.refetchEvents();
         }

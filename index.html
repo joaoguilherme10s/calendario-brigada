@@ -218,7 +218,7 @@
 
   <header>
     <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Agendamentos abertos anualmente de <strong>Abril a Julho</strong> (Para qualquer ano)</p>
+    <p>Agendamentos abertos anualmente de <strong>Abril a Julho</strong></p>
   </header>
 
   <div class="container">
@@ -236,7 +236,7 @@
         </div>
 
         <div class="form-group">
-          <label for="omSetor">OM / Setor</label>
+          <label alt="OM / Setor" for="omSetor">OM / Setor</label>
           <input type="text" id="omSetor" placeholder="Ex: BABR / Célula Contraincêndio" required>
         </div>
 
@@ -256,7 +256,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Liberado livremente nos meses de <strong>Abril, Maio, Junho e Julho</strong> de qualquer ano.
+        <i class="fa-solid fa-circle-info"></i> Apenas os meses de <strong>Abril a Julho</strong> aparecem disponíveis para navegação.
       </div>
     </div>
   </div>
@@ -292,36 +292,38 @@
           center: 'title',
           right: 'dayGridMonth'
         },
+        initialDate: '2027-04-01',
         buttonText: {
           today: 'Hoje',
           month: 'Mês'
         },
-        // Sem limite de anos em `validRange`, permitindo navegar por qualquer ano livremente.
         
+        // Trava de visualização dinâmica que bloqueia o usuário de navegar para fora de Abril-Julho em qualquer ano
+        validRange: function(currentDate) {
+          const year = currentDate.getFullYear();
+          return {
+            start: `${year}-04-01`,
+            end: `${year}-08-01`
+          };
+        },
+
         dateClick: function(info) {
           const clickedDate = new Date(info.dateStr + 'T00:00:00');
           const dayOfWeek = clickedDate.getDay();
-          const month = clickedDate.getMonth() + 1; // 1 = Jan, 4 = Abr, 7 = Jul, etc.
 
-          // 1. Regra anual: Permite APENAS Abril (4), Maio (5), Junho (6) e Julho (7) de QUALQUER ano
-          if (month < 4 || month > 7) {
-            alert('Atenção: Os agendamentos são permitidos apenas nos meses de Abril, Maio, Junho e Julho de cada ano.');
-            return;
-          }
-
-          // 2. Bloqueia fins de semana
+          // Bloqueia fins de semana
           if (dayOfWeek === 0 || dayOfWeek === 6) {
             alert('Atenção: Instruções práticas não são ministradas aos sábados e domingos.');
             return;
           }
 
-          // 3. Verifica bloqueios administrativos
+          // Verifica bloqueios administrativos
           if (cacheBloqueios.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} está bloqueada administrativamente.`);
             return;
           }
 
-          // 4. Verifica se já está ocupado
+          // Verifica se já está ocupado
           if (cacheOcupados.has(info.dateStr)) {
             alert(`A data ${formatarDataBr(info.dateStr)} já está ocupada por outro setor.`);
             return;

@@ -131,7 +131,7 @@
       text-decoration: none;
     }
 
-    /* Classe personalizada para destacar o dia selecionado no calendário */
+    /* Estilo para destacar o dia selecionado */
     .dia-selecionado-custom {
       background-color: rgba(72, 202, 228, 0.35) !important;
       border: 2px solid var(--accent-blue) !important;
@@ -262,7 +262,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Clique em um dia disponível para destacá-lo e preencha os dados ao lado.
+        <i class="fa-solid fa-circle-info"></i> Selecione uma data disponível no calendário para prosseguir.
       </div>
     </div>
   </div>
@@ -304,6 +304,7 @@
           month: 'Mês'
         },
         
+        // Trava de visualização de Abril a Julho para qualquer ano
         validRange: function(currentDate) {
           const year = currentDate.getFullYear();
           return {
@@ -332,12 +333,12 @@
             return;
           }
 
-          // Remove o destaque anterior (se houver)
+          // Remove o destaque anterior
           document.querySelectorAll('.dia-selecionado-custom').forEach(el => {
             el.classList.remove('dia-selecionado-custom');
           });
 
-          // Adiciona o destaque na célula do dia clicado
+          // Adiciona o destaque na célula clicada
           info.dayEl.classList.add('dia-selecionado-custom');
 
           selectedDateStr = info.dateStr;
@@ -443,6 +444,11 @@
         selectedDateStr = null;
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Agendamento';
+
+        // Remove o destaque e atualiza
+        document.querySelectorAll('.dia-selecionado-custom').forEach(el => {
+          el.classList.remove('dia-selecionado-custom');
+        });
 
         if (calendarInstance) {
           calendarInstance.refetchEvents();

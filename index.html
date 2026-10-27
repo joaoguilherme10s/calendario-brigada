@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agendamento de Instrução Prática - Brigada</title>
+  <title>Agendamento de Instrução Prática na CCI-BABR - Brigada</title>
   
   <!-- CSS DO FULLCALENDAR -->
   <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css' rel='stylesheet' />
@@ -223,8 +223,8 @@
 <body>
 
   <header>
-    <h1><i class="fa-solid fa-fire-extinguisher"></i> Agenda de Instrução Prática</h1>
-    <p>Sistema de Agendamento - Célula Contraincêndio</p>
+    <h1><i class="fa-solid fa-fire-extinguisher"></i> SOLICITE AQUI SUA INSTRUÇÃO PRÁTICA </h1>
+    <p>Sistema de Agendamento - Célula Contraincêndio - BABR</p>
   </header>
 
   <div class="container">
@@ -233,7 +233,7 @@
     </div>
 
     <div class="card form-panel">
-      <h2><i class="fa-regular fa-calendar-check"></i> Dados do Agendamento</h2>
+      <h2><i class="fa-regular fa-calendar-check"></i> Dados do Agendamento </h2>
       
       <form id="formAgendamento">
         <div class="form-group">
@@ -247,8 +247,8 @@
         </div>
 
         <div class="form-group">
-          <label for="responsavel">Responsável</label>
-          <input type="text" id="responsavel" placeholder="Nome do responsável" required>
+          <label for="responsavel">Posto/Grad. + Nome de Guerra</label>
+          <input type="text" id="responsavel" placeholder="3S JOÃO" required>
         </div>
 
         <div class="form-group">
@@ -268,7 +268,7 @@
   </div>
 
   <footer>
-    <p>&copy; 2027 Sistema de Treinamento de Brigadistas. Todos os direitos reservados.</p>
+    <p>&copy; 2027 Sistema de Treinamento de Brigadistas. Sistema desenvolvido por 3S João Guilherme.</p>
   </footer>
 
   <script>
@@ -436,7 +436,7 @@
           throw error;
         }
 
-        alert(`✅ Agendamento realizado com sucesso para ${formatarDataBr(selectedDateStr)}!`);
+        alert(`✅ Agendamento solicitado com sucesso para ${formatarDataBr(selectedDateStr)}, em breve a Célula Contraincêndio entrará em contato para demais informações.`);
         document.getElementById('formAgendamento').reset();
         document.getElementById('dataSelecionada').value = '';
         selectedDateStr = null;

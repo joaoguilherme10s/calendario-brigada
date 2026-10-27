@@ -131,6 +131,12 @@
       text-decoration: none;
     }
 
+    /* Classe personalizada para destacar o dia selecionado no calendário */
+    .dia-selecionado-custom {
+      background-color: rgba(72, 202, 228, 0.35) !important;
+      border: 2px solid var(--accent-blue) !important;
+    }
+
     .form-panel h2 {
       font-size: 1.3rem;
       color: var(--accent-blue);
@@ -256,7 +262,7 @@
       </form>
 
       <div class="info-box">
-        <i class="fa-solid fa-circle-info"></i> Preencha os campos e selecione um dia disponível no calendário.
+        <i class="fa-solid fa-circle-info"></i> Clique em um dia disponível para destacá-lo e preencha os dados ao lado.
       </div>
     </div>
   </div>
@@ -267,11 +273,11 @@
 
   <script>
     const SUPABASE_URL = 'https://dhiegmdhpvorgckpilnb.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24i',()=>{},
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjE5MzcsImV4cCI6MjEwODU5NzkzN30.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
     
     let supabaseClient = null;
     try {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjE5MzcsImV4cCI6MjEwODU5NzkzN30.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng');
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) {
       console.log("Erro ao iniciar Supabase.");
     }
@@ -292,14 +298,12 @@
           center: 'title',
           right: 'dayGridMonth'
         },
-        // Força a abertura direto em Abril de 2027 (eliminando o ano de 2026 da tela inicial)
         initialDate: '2027-04-01',
         buttonText: {
           today: 'Abril 2027',
           month: 'Mês'
         },
         
-        // Bloqueio rigoroso por função: para cada ano, permite apenas os meses de Abril (4) até Julho (7)
         validRange: function(currentDate) {
           const year = currentDate.getFullYear();
           return {
@@ -327,6 +331,14 @@
             alert(`A data ${formatarDataBr(info.dateStr)} já está ocupada por outro setor.`);
             return;
           }
+
+          // Remove o destaque anterior (se houver)
+          document.querySelectorAll('.dia-selecionado-custom').forEach(el => {
+            el.classList.remove('dia-selecionado-custom');
+          });
+
+          // Adiciona o destaque na célula do dia clicado
+          info.dayEl.classList.add('dia-selecionado-custom');
 
           selectedDateStr = info.dateStr;
           document.getElementById('dataSelecionada').value = formatarDataBr(info.dateStr);

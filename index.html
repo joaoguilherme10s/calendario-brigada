@@ -304,15 +304,12 @@
           month: 'Mês'
         },
         
-        // Trava de visualização de Abril a Julho para qualquer ano
-        validRange: function(currentDate) {
-          const year = currentDate.getFullYear();
-          return {
-            start: `2027-04-01`,
-            end: `2027-08-01`
-        //Aqui alterammos qual ano o calendario irá mostrar
-          };
+        // Trava fixa que bloqueia 2026 e qualquer data antes de Abril de 2027
+        validRange: {
+          start: '2027-04-01',
+          end: '2027-08-01'
         },
+        //AQUI ALTERAMOS O ANO DO CALENDARIO
 
         dateClick: function(info) {
           const clickedDate = new Date(info.dateStr + 'T00:00:00');

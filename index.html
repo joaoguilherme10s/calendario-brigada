@@ -267,11 +267,11 @@
 
   <script>
     const SUPABASE_URL = 'https://dhiegmdhpvorgckpilnb.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjE5MzcsImV4cCI6MjEwODU5NzkzN30.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24i',()=>{},
     
     let supabaseClient = null;
     try {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoaWVnbWRocHZvcmdja3BpbG5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjE5MzcsImV4cCI6MjEwODU5NzkzN30.b4RJNDCq-OvCLvOuItUt1Djaqkhf0rBWVkiKQ9DAQng');
     } catch(e) {
       console.log("Erro ao iniciar Supabase.");
     }
@@ -292,16 +292,20 @@
           center: 'title',
           right: 'dayGridMonth'
         },
+        // Força a abertura direto em Abril de 2027 (eliminando o ano de 2026 da tela inicial)
         initialDate: '2027-04-01',
         buttonText: {
-          today: 'Hoje',
+          today: 'Abril 2027',
           month: 'Mês'
         },
         
-        // Trava física absoluta que restringe o calendário estritamente entre 1 de abril e 31 de julho de 2027
-        validRange: {
-          start: '2027-04-01',
-          end: '2027-08-01'
+        // Bloqueio rigoroso por função: para cada ano, permite apenas os meses de Abril (4) até Julho (7)
+        validRange: function(currentDate) {
+          const year = currentDate.getFullYear();
+          return {
+            start: `${year}-04-01`,
+            end: `${year}-08-01`
+          };
         },
 
         dateClick: function(info) {
